@@ -317,6 +317,34 @@
             font-size: 10px;
             font-weight: 600;
         }
+
+        /* Lightbox overlay */
+        .img-modal {
+            display: none;
+            position: fixed;
+            z-index: 9999;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85);
+            justify-content: center;
+            align-items: center;
+            cursor: zoom-out;
+        }
+
+        /* Enlarged image */
+        .img-modal img {
+            max-width: 90%;
+            max-height: 90%;
+            border-radius: 6px;
+            background: #fff;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.6);
+            animation: zoomIn .3s ease;
+        }
+
+        @keyframes zoomIn {
+            from { transform: scale(0.7); opacity: 0; }
+            to   { transform: scale(1); opacity: 1; }
+        }
     </style>
 </head>
 
@@ -345,6 +373,10 @@
         <div class="books-grid" id="books-grid">
             <div class="loading">Loading your library...</div>
         </div>
+    </div>
+
+    <div class="img-modal" id="imgModal">
+        <img id="modalImg" src="" alt="">
     </div>
 
     <script>
@@ -1503,6 +1535,27 @@
             // You can load the corresponding JSON text file: ${index}.json
             // window.open(`texts/${index}.json`, '_blank');
         }
+
+        // Zoom-in modal for cover images
+        document.addEventListener('click', function(e) {
+            if (e.target.tagName === 'IMG' && e.target.closest('.cover-img-block')) {
+                const modal = document.getElementById('imgModal');
+                const modalImg = document.getElementById('modalImg');
+                modalImg.src = e.target.src;  // uses your folder image directly
+                modal.style.display = 'flex';
+            }
+        });
+
+        // Close modal when clicking overlay or pressing Escape
+        document.getElementById('imgModal').addEventListener('click', function(e) {
+            this.style.display = 'none';
+        });
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                document.getElementById('imgModal').style.display = 'none';
+            }
+        });
 
         // Initialize the library when the page loads
         document.addEventListener('DOMContentLoaded', initializeLibrary);
