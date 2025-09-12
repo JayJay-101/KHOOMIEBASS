@@ -20,7 +20,7 @@
         }
 
         .library-container {
-            max-width: 1600px;
+            max-width: 1800px;
             margin: 0 auto;
             background: white;
             border-radius: 8px;
@@ -90,20 +90,36 @@
         }
 
         .books-grid {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0;
+            display: grid;
+            grid-template-columns: repeat(3, 370px);
+            gap: 35px 50px;
+            justify-content: center;
         }
 
-        /* Default: 3 columns for 90%-110% zoom */
         .opr-bookself-item {
             width: 370px;
             height: 176px;
             box-shadow: 0px 3px 6px #e5e7ee;
             padding: 0;
-            margin: 0 50px 35px 0;
             border-radius: 5px;
-            flex: 0 0 calc(33.333% - 35px);
+        }
+
+        @media (min-width: 1600px) {
+            .books-grid {
+                grid-template-columns: repeat(4, 370px);
+            }
+        }
+
+        @media (max-width: 1200px) {
+            .books-grid {
+                grid-template-columns: repeat(2, 370px);
+            }
+        }
+
+        @media (max-width: 800px) {
+            .books-grid {
+                grid-template-columns: 370px;
+            }
         }
 
         .opr-booklist-wrapper {
