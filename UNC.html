@@ -297,6 +297,66 @@
                 font-size: calc(var(--card-h) * 0.08);
             }
         }
+
+        /* 1) Keep the badge in a corner and off the text */
+        .opr-bookself-item { position: relative; }
+
+        /* Put badge on the card's LEFT–TOP corner (sits over the cover column, not the title) */
+        .book-index{
+          position: absolute;
+          left: 8px;
+          top: 8px;
+          background: #047a9c;
+          color: #fff;
+          padding: 2px 8px;
+          border-radius: 999px;
+          font-size: 10px;
+          font-weight: 700;
+          line-height: 1;
+          z-index: 3;
+          pointer-events: none;
+          box-shadow: 0 1px 2px rgba(0,0,0,.08);
+        }
+
+        /* Mobile readability + safe spacing */
+        @media (max-width: 420px){
+          .book-index{
+            left: 6px;
+            top: 6px;
+            font-size: 11px;
+            padding: 3px 8px;
+          }
+        }
+
+        /* 2) Prevent “Read” zone from colliding with content at 100% zoom */
+
+        /* Let the card grow if content needs space, but keep a sensible minimum */
+        .opr-bookself-item{
+          min-height: 176px;
+          height: auto;
+        }
+
+        /* Reserve space at the bottom for the button row */
+        .opr-booklist-wrapper{
+          padding-bottom: 48px;
+        }
+
+        /* Position the button holder inside padding, not flush with edges */
+        .opr-lib-btn-holder{
+          padding: 0 16px 16px;
+        }
+
+        /* Clear old float layout so rows don’t collapse at certain zooms */
+        .opr-thumbnail-data::after{
+          content: "";
+          display: table;
+          clear: both;
+        }
+
+        /* Optional: if titles push into the badge area on some widths, nudge the title */
+        .opr-cover-space h2{
+          margin-right: 10px;
+        }
     </style>
 </head>
 
@@ -1483,10 +1543,10 @@
 
             const booksHTML = filteredBooks.map(book => `
                 <div class="opr-bookself-item">
+                    <div class="book-index">#${book.index}</div>
                     <div class="opr-booklist-wrapper">
                         <div class="opr-thumbnail-data">
                             <div class="opr-cover-space">
-                                <div class="book-index">#${book.index}</div>
                                 <h2>${escapeHtml(book.title)}</h2>
                                 <div class="opr-author">${escapeHtml(book.author)}</div>
                                 <div class="opr-lastread">Available now</div>
@@ -1498,7 +1558,7 @@
                         <div class="cover-img-block">
                             <div class="cover-img-middle">
                                 <div class="cover-img-center">
-                                    <img src="image/${book.index}.jpg" 
+                                    <img src="image/${book.index}.jpg"
                                          alt="${escapeHtml(book.title)}"
                                          onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iOTIiIGhlaWdodD0iMTI1IiB2aWV3Qm94PSIwIDAgOTIgMTI1IiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgo8cmVjdCB3aWR0aD0iOTIiIGhlaWdodD0iMTI1IiBmaWxsPSIjRjBGMEYwIiBzdHJva2U9IiNENUQ1RDUiLz4KPHN2ZyB4PSIyNiIgeT0iMzUiIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiNDQ0NDQ0MiIHN0cm9rZS13aWR0aD0iMSI+CjxyZWN0IHg9IjMiIHk9IjMiIHdpZHRoPSIxOCIgaGVpZ2h0PSIxOCIgcng9IjIiIHJ5PSIyIi8+CjxjaXJjbGUgY3g9IjguNSIgY3k9IjguNSIgcj0iMS41Ii8+CjxwYXRoIGQ9Im0yMSAxNS0zLjA4Ni0zLjA4NmEyIDIgMCAwIDAtMi44MjggMEwxMiAxNSIvPgo8L3N2Zz4KPHRleHQgeD0iNDYiIHk9IjEwMCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjEwIiBmaWxsPSIjOTk5OTk5IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5ObyBJbWFnZTwvdGV4dD4KPC9zdmc+Cg=='">
                                 </div>
