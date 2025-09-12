@@ -19,6 +19,11 @@
             padding: 20px;
         }
 
+        :root {
+            --card-h: 176px;
+            --row-gap: 35px;
+        }
+
         .library-container {
             max-width: 1800px;
             margin: 0 auto;
@@ -92,16 +97,17 @@
         .books-grid {
             display: grid;
             grid-template-columns: repeat(3, 370px);
-            gap: 35px 50px;
+            gap: var(--row-gap) 50px;
             justify-content: center;
         }
 
         .opr-bookself-item {
             width: 370px;
-            height: 176px;
+            height: var(--card-h);
             box-shadow: 0px 3px 6px #e5e7ee;
             padding: 0;
             border-radius: 5px;
+            position: relative;
         }
 
         @media (min-width: 2400px) { 
@@ -274,13 +280,13 @@
 
         .book-index {
             position: absolute;
-            top: -10px;
-            right: -10px;
+            top: 6px;
+            right: 6px;
             background: #047a9c;
             color: white;
             padding: 2px 8px;
             border-radius: 10px;
-            font-size: 10px;
+            font-size: calc(var(--card-h) * 0.06);
             font-weight: 600;
         }
 
@@ -288,8 +294,68 @@
             .book-index {
                 top: 5px;
                 right: 5px;
-                font-size: 12px;
+                font-size: calc(var(--card-h) * 0.08);
             }
+        }
+
+        /* 1) Keep the badge in a corner and off the text */
+        .opr-bookself-item { position: relative; }
+
+        /* Put badge on the card's LEFT–TOP corner (sits over the cover column, not the title) */
+        .book-index{
+          position: absolute;
+          left: 8px;
+          top: 8px;
+          background: #047a9c;
+          color: #fff;
+          padding: 2px 8px;
+          border-radius: 999px;
+          font-size: 10px;
+          font-weight: 700;
+          line-height: 1;
+          z-index: 3;
+          pointer-events: none;
+          box-shadow: 0 1px 2px rgba(0,0,0,.08);
+        }
+
+        /* Mobile readability + safe spacing */
+        @media (max-width: 420px){
+          .book-index{
+            left: 6px;
+            top: 6px;
+            font-size: 11px;
+            padding: 3px 8px;
+          }
+        }
+
+        /* 2) Prevent “Read” zone from colliding with content at 100% zoom */
+
+        /* Let the card grow if content needs space, but keep a sensible minimum */
+        .opr-bookself-item{
+          min-height: 176px;
+          height: auto;
+        }
+
+        /* Reserve space at the bottom for the button row */
+        .opr-booklist-wrapper{
+          padding-bottom: 48px;
+        }
+
+        /* Position the button holder inside padding, not flush with edges */
+        .opr-lib-btn-holder{
+          padding: 0 16px 16px;
+        }
+
+        /* Clear old float layout so rows don’t collapse at certain zooms */
+        .opr-thumbnail-data::after{
+          content: "";
+          display: table;
+          clear: both;
+        }
+
+        /* Optional: if titles push into the badge area on some widths, nudge the title */
+        .opr-cover-space h2{
+          margin-right: 10px;
         }
     </style>
 </head>
@@ -1395,6 +1461,56 @@
         let allBooks = [];
         let filteredBooks = [];
 
+        function getZoomPct() {
+            return Math.round(100 / window.devicePixelRatio);
+        }
+
+        function targetRowsFromZoom(zoomPct) {
+            if (zoomPct <= 80) return 4;
+            if (zoomPct <= 110) return 3;
+            if (zoomPct <= 150) return 2;
+            return 1;
+        }
+
+        function updateRowLayout() {
+            const zoomPct = getZoomPct();
+            const targetRows = Math.min(4, Math.max(1, targetRowsFromZoom(zoomPct)));
+
+            const grid = document.getElementById('books-grid');
+            if (!grid) return;
+
+            const headerHeight = grid.getBoundingClientRect().top;
+            const availableHeight = window.innerHeight - headerHeight;
+            const safetyBuffer = 12;
+
+            let cardH = 176;
+            let rowGap = 35;
+            const minGap = 16;
+            const minCard = 120;
+
+            const maxHeight = availableHeight - safetyBuffer;
+            const totalHeight = () => targetRows * cardH + (targetRows - 1) * rowGap;
+
+            while (totalHeight() > maxHeight && rowGap > minGap) {
+                rowGap -= 2;
+            }
+            while (totalHeight() > maxHeight && cardH > minCard) {
+                cardH -= 4;
+            }
+
+            const root = document.documentElement;
+            root.style.setProperty('--card-h', cardH + 'px');
+            root.style.setProperty('--row-gap', rowGap + 'px');
+        }
+
+        function debounce(fn, delay) {
+            let timer;
+            return function () {
+                clearTimeout(timer);
+                timer = setTimeout(fn, delay);
+            };
+        }
+
         function initializeLibrary() {
             allBooks = booksData;
             filteredBooks = [...allBooks];
@@ -1402,6 +1518,7 @@
             updateStats();
             renderBooks();
             setupSearch();
+            updateRowLayout();
         }
 
         function updateStats() {
@@ -1426,10 +1543,10 @@
 
             const booksHTML = filteredBooks.map(book => `
                 <div class="opr-bookself-item">
+                    <div class="book-index">#${book.index}</div>
                     <div class="opr-booklist-wrapper">
                         <div class="opr-thumbnail-data">
                             <div class="opr-cover-space">
-                                <div class="book-index">#${book.index}</div>
                                 <h2>${escapeHtml(book.title)}</h2>
                                 <div class="opr-author">${escapeHtml(book.author)}</div>
                                 <div class="opr-lastread">Available now</div>
@@ -1441,7 +1558,7 @@
                         <div class="cover-img-block">
                             <div class="cover-img-middle">
                                 <div class="cover-img-center">
-                                    <img src="image/${book.index}.jpg" 
+                                    <img src="image/${book.index}.jpg"
                                          alt="${escapeHtml(book.title)}"
                                          onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iOTIiIGhlaWdodD0iMTI1IiB2aWV3Qm94PSIwIDAgOTIgMTI1IiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgo8cmVjdCB3aWR0aD0iOTIiIGhlaWdodD0iMTI1IiBmaWxsPSIjRjBGMEYwIiBzdHJva2U9IiNENUQ1RDUiLz4KPHN2ZyB4PSIyNiIgeT0iMzUiIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiNDQ0NDQ0MiIHN0cm9rZS13aWR0aD0iMSI+CjxyZWN0IHg9IjMiIHk9IjMiIHdpZHRoPSIxOCIgaGVpZ2h0PSIxOCIgcng9IjIiIHJ5PSIyIi8+CjxjaXJjbGUgY3g9IjguNSIgY3k9IjguNSIgcj0iMS41Ii8+CjxwYXRoIGQ9Im0yMSAxNS0zLjA4Ni0zLjA4NmEyIDIgMCAwIDAtMi44MjggMEwxMiAxNSIvPgo8L3N2Zz4KPHRleHQgeD0iNDYiIHk9IjEwMCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjEwIiBmaWxsPSIjOTk5OTk5IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5ObyBJbWFnZTwvdGV4dD4KPC9zdmc+Cg=='">
                                 </div>
@@ -1452,6 +1569,7 @@
             `).join('');
 
             grid.innerHTML = booksHTML;
+            updateRowLayout();
         }
 
         function setupSearch() {
@@ -1477,6 +1595,10 @@
             // You can load the corresponding JSON text file: ${index}.json
             // window.open(`texts/${index}.json`, '_blank');
         }
+
+        const updateRowLayoutDebounced = debounce(updateRowLayout, 100);
+        window.addEventListener('resize', updateRowLayoutDebounced);
+        window.addEventListener('orientationchange', updateRowLayoutDebounced);
 
         // Initialize the library when the page loads
         document.addEventListener('DOMContentLoaded', initializeLibrary);
