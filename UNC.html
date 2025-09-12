@@ -20,7 +20,7 @@
         }
 
         .library-container {
-            max-width: 1600px;
+            max-width: 1800px;
             margin: 0 auto;
             background: white;
             border-radius: 8px;
@@ -90,20 +90,36 @@
         }
 
         .books-grid {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0;
+            display: grid;
+            grid-template-columns: repeat(3, 370px);
+            gap: 35px 50px;
+            justify-content: center;
         }
 
-        /* Default: 3 columns for 90%-110% zoom */
         .opr-bookself-item {
             width: 370px;
             height: 176px;
             box-shadow: 0px 3px 6px #e5e7ee;
             padding: 0;
-            margin: 0 50px 35px 0;
             border-radius: 5px;
-            flex: 0 0 calc(33.333% - 35px);
+        }
+
+        @media (min-width: 2400px) {
+            .books-grid {
+                grid-template-columns: repeat(4, 370px);
+            }
+        }
+
+        @media (max-width: 1536px) {
+            .books-grid {
+                grid-template-columns: repeat(2, 370px);
+            }
+        }
+
+        @media (max-width: 1279px) {
+            .books-grid {
+                grid-template-columns: 370px;
+            }
         }
 
         .opr-booklist-wrapper {
@@ -240,40 +256,6 @@
             width: 100%;
         }
 
-        /* Zoom-based responsive behavior */
-
-        /* 4 columns for 25%-80% zoom */
-        @media screen and (min-width: 1800px) {
-            .opr-bookself-item {
-                flex: 0 0 calc(25% - 40px);
-            }
-        }
-
-        /* 3 columns for 90%-110% zoom (default) */
-        @media screen and (max-width: 1799px) and (min-width: 1200px) {
-            .opr-bookself-item {
-                flex: 0 0 calc(33.333% - 35px);
-            }
-        }
-
-        /* 2 columns for 125%-150% zoom */
-        @media screen and (max-width: 1199px) and (min-width: 800px) {
-            .opr-bookself-item {
-                flex: 0 0 calc(50% - 25px);
-                margin-right: 25px;
-            }
-        }
-
-        /* 1 column for >150% zoom */
-        @media screen and (max-width: 799px) {
-            .opr-bookself-item {
-                flex: 0 0 100%;
-                margin-right: 0;
-                max-width: 370px;
-                margin: 0 auto 35px auto;
-            }
-        }
-
         /* Mobile adjustments */
         @media screen and (max-width: 420px) {
             .opr-bookself-item {
@@ -300,6 +282,14 @@
             border-radius: 10px;
             font-size: 10px;
             font-weight: 600;
+        }
+
+        @media screen and (max-width: 420px) {
+            .book-index {
+                top: 5px;
+                right: 5px;
+                font-size: 12px;
+            }
         }
     </style>
 </head>
