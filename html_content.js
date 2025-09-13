@@ -1,0 +1,1618 @@
+const HTML_CONTENT = String.raw`
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digital Book Library</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f8f9fa;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .library-container {
+            max-width: 1800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .library-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .library-title {
+            font-size: 2.2rem;
+            color: #252525;
+            margin-bottom: 10px;
+            font-weight: 400;
+        }
+
+        .library-subtitle {
+            color: #7a7a7a;
+            font-size: 1rem;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: #047a9c;
+            display: block;
+        }
+
+        .stat-label {
+            color: #7a7a7a;
+            font-size: 0.9rem;
+        }
+
+        .search-container {
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .search-input {
+            width: 100%;
+            max-width: 400px;
+            padding: 10px 20px;
+            border: 1px solid #d5d5d5;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #047a9c;
+        }
+
+        .books-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 370px);
+            gap: 35px 50px;
+            justify-content: center;
+        }
+
+        .opr-bookself-item {
+            width: 370px;
+            height: 176px;
+            box-shadow: 0px 3px 6px #e5e7ee;
+            padding: 0;
+            border-radius: 5px;
+        }
+
+        @media (min-width: 1600px) {
+            .books-grid {
+                grid-template-columns: repeat(4, 370px);
+            }
+        }
+
+        @media (max-width: 1200px) {
+            .books-grid {
+                grid-template-columns: repeat(2, 370px);
+            }
+        }
+
+        @media (max-width: 800px) {
+            .books-grid {
+                grid-template-columns: 370px;
+            }
+        }
+
+        .opr-booklist-wrapper {
+            display: block;
+            position: relative;
+            padding: 20px 20px 0 20px;
+            height: 100%;
+        }
+
+        .opr-thumbnail-data {
+            float: left;
+            width: 100%;
+            text-align: left;
+        }
+
+        .opr-cover-space {
+            margin-left: 114px;
+            position: relative;
+            min-height: 125px;
+        }
+
+        .opr-cover-space h2 {
+            font-size: 16px;
+            word-wrap: break-word;
+            color: #252525;
+            margin-bottom: 5px;
+            line-height: 22px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            font-weight: 500;
+        }
+
+        .opr-author {
+            font-size: 14px;
+            color: #7a7a7a;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            overflow: hidden;
+            margin-bottom: 5px;
+        }
+
+        .opr-lastread {
+            font-size: 10px;
+            color: rgba(68, 68, 68, 0.87);
+            position: absolute;
+            bottom: 40px;
+        }
+
+        .cover-img-block {
+            border: 1px solid #d5d5d5;
+            width: 92px;
+            height: 125px;
+            background-color: #fff;
+            float: left;
+            margin-left: -100%;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .cover-img-middle {
+            display: table;
+            width: 100%;
+            height: 127px;
+            vertical-align: middle;
+        }
+
+        .cover-img-center {
+            display: table-cell;
+            vertical-align: middle;
+            max-width: 100%;
+            max-height: 125px;
+        }
+
+        .cover-img-center img {
+            max-width: 100%;
+            max-height: 123px;
+            display: block;
+            margin: 0 auto;
+        }
+
+        .opr-lib-btn-holder {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+        }
+
+        .btn {
+            font-size: 12px;
+            width: 128px;
+            padding: 0;
+            height: 32px;
+            line-height: 32px;
+            border-radius: 40px;
+            margin-right: 15px;
+            border: none;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .btn-primary {
+            background-color: #047a9c;
+            border-color: #047a9c;
+            color: white;
+        }
+
+        .btn-primary:hover,
+        .btn-primary:focus {
+            border-color: #ffb81c;
+            background-color: #ffb81c;
+            color: #252525 !important;
+        }
+
+        .btn.added-btn {
+            width: 140px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #7a7a7a;
+            width: 100%;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 60px;
+            color: #7a7a7a;
+            width: 100%;
+        }
+
+        /* Zoom-based responsive behavior */
+
+        /* 4 columns for 25%-80% zoom */
+        @media screen and (min-width: 1800px) {
+            .opr-bookself-item {
+                flex: 0 0 calc(25% - 40px);
+            }
+        }
+
+        /* 3 columns for 90%-110% zoom (default) */
+        @media screen and (max-width: 1799px) and (min-width: 1200px) {
+            .opr-bookself-item {
+                flex: 0 0 calc(33.333% - 35px);
+            }
+        }
+
+        /* 2 columns for 125%-150% zoom */
+        @media screen and (max-width: 1199px) and (min-width: 800px) {
+            .opr-bookself-item {
+                flex: 0 0 calc(50% - 25px);
+                margin-right: 25px;
+            }
+        }
+
+        /* 1 column for >150% zoom */
+        @media screen and (max-width: 799px) {
+            .opr-bookself-item {
+                flex: 0 0 100%;
+                margin-right: 0;
+                max-width: 370px;
+                margin: 0 auto 35px auto;
+            }
+        }
+
+        /* Mobile adjustments */
+        @media screen and (max-width: 420px) {
+            .opr-bookself-item {
+                width: 100%;
+                margin: 0 0 35px 0;
+            }
+
+            .library-container {
+                padding: 15px;
+            }
+
+            .library-title {
+                font-size: 1.8rem;
+            }
+        }
+
+        .book-index {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            background: #047a9c;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 10px;
+            font-weight: 600;
+        }
+
+        .lazy-load {
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .book-cover {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        /* Lightbox overlay */
+        .img-modal {
+            display: none;
+            position: fixed;
+            z-index: 9999;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85);
+            justify-content: center;
+            align-items: center;
+            cursor: zoom-out;
+        }
+
+        /* Enlarged image */
+        .img-modal img {
+            max-width: 90%;
+            max-height: 90%;
+            border-radius: 6px;
+            background: #fff;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.6);
+            animation: zoomIn .3s ease;
+        }
+
+        @keyframes zoomIn {
+            from { transform: scale(0.7); opacity: 0; }
+            to   { transform: scale(1); opacity: 1; }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="library-container">
+        <div class="library-header">
+            <h1 class="library-title">Digital Book Library</h1>
+            <p class="library-subtitle">Discover your next great read</p>
+
+            <div class="stats">
+                <div class="stat-item">
+                    <span class="stat-number" id="total-books">0</span>
+                    <span class="stat-label">Total Books</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number" id="unique-authors">0</span>
+                    <span class="stat-label">Authors</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="search-container">
+            <input type="text" class="search-input" id="search-input" placeholder="Search books or authors...">
+        </div>
+
+        <div class="books-grid" id="books-grid">
+            <div class="loading">Loading your library...</div>
+        </div>
+    </div>
+
+    <div class="img-modal" id="imgModal">
+        <img id="modalImg" src="" alt="">
+    </div>
+
+    <script>
+        // Sample data - replace this with your actual JSON data
+        const booksData =
+            [
+                {
+                    "index": 1,
+                    "title": "Computing with Python",
+                    "author": "Führer"
+                },
+                {
+                    "index": 2,
+                    "title": "Service Operations Management",
+                    "author": "Johnston"
+                },
+                {
+                    "index": 3,
+                    "title": "Introduction to Communication Disorders: A Li...",
+                    "author": "Owens"
+                },
+                {
+                    "index": 4,
+                    "title": "Operating Systems: Design and Implementation",
+                    "author": "Tanenbaum;Woodhull"
+                },
+                {
+                    "index": 5,
+                    "title": "Introducing Human Resource Management 7th edn",
+                    "author": "Hook, Caroline;Jenkins, Andrew;Foot, Margaret"
+                },
+                {
+                    "index": 6,
+                    "title": "Essentials of Strategic Management",
+                    "author": "Hunger"
+                },
+                {
+                    "index": 7,
+                    "title": "Leading Constant Change",
+                    "author": "Webb"
+                },
+                {
+                    "index": 8,
+                    "title": "Financial Derivatives: The Currency and Rates...",
+                    "author": "Aman Chugh, Divik Maheshwari"
+                },
+                {
+                    "index": 9,
+                    "title": "Business Communication for Managers, 2/e",
+                    "author": "Payal Mehra"
+                },
+                {
+                    "index": 10,
+                    "title": "Marketing Research, Global Edition",
+                    "author": "Burns, Alvin C.; Bush, Ronald F."
+                },
+                {
+                    "index": 11,
+                    "title": "Macroeconomics: Principles, Applications, and...",
+                    "author": "O'Sullivan;Sheffrin;Perez"
+                },
+                {
+                    "index": 12,
+                    "title": "Inside Track To Successful Academic Writing",
+                    "author": "Gillett"
+                },
+                {
+                    "index": 13,
+                    "title": "Entrepreneurship Development and Small Busine...",
+                    "author": "Charantimath"
+                },
+                {
+                    "index": 14,
+                    "title": "Operations Management: Theory and Practice",
+                    "author": "B. Mahadevan"
+                },
+                {
+                    "index": 15,
+                    "title": "Probability, Statistics, and Random Processes...",
+                    "author": "Leon-Garcia"
+                },
+                {
+                    "index": 16,
+                    "title": "Software Engineering",
+                    "author": "Ian Sommerville"
+                },
+                {
+                    "index": 17,
+                    "title": "Big Data Simplified,1e",
+                    "author": "Mukherjee"
+                },
+                {
+                    "index": 18,
+                    "title": "Linear Algebra & Partial Differential Eq",
+                    "author": "Das; Vijayakumari"
+                },
+                {
+                    "index": 19,
+                    "title": "Fundamentals of Business Communication",
+                    "author": "Chaturvedi; Chaturvedi"
+                },
+                {
+                    "index": 20,
+                    "title": "Strategic Management and Business Policy: Glo...",
+                    "author": "Wheelen, Thomas L.; Hunger, J. David; Hoffman, Alan N.; Bamford, Charles E."
+                },
+                {
+                    "index": 21,
+                    "title": "Creating Value from Mergers and Acquisitions",
+                    "author": "Sudarsanam"
+                },
+                {
+                    "index": 22,
+                    "title": "Introduction to Statistics and SPSS in Psycho...",
+                    "author": "Mayers"
+                },
+                {
+                    "index": 23,
+                    "title": "Pearson Foundation Mathematics_TC Global",
+                    "author": "Trishna"
+                },
+                {
+                    "index": 24,
+                    "title": "Operating Systems: Internals and Design Princ...",
+                    "author": "Stallings, William"
+                },
+                {
+                    "index": 25,
+                    "title": "Be Your Own Financial Adviser:The comprehensi...",
+                    "author": "Lowe"
+                },
+                {
+                    "index": 26,
+                    "title": "A First Course in Probability, 9e",
+                    "author": "Ross"
+                },
+                {
+                    "index": 27,
+                    "title": "Marketing Research",
+                    "author": "Malhotra"
+                },
+                {
+                    "index": 28,
+                    "title": "Financial Management",
+                    "author": "I.M. Pandey"
+                },
+                {
+                    "index": 29,
+                    "title": "Legal Aspects of Business",
+                    "author": "Agarwal"
+                },
+                {
+                    "index": 30,
+                    "title": "Management, Global Edition",
+                    "author": "Robbins, Stephen P.; Coulter, Mary A."
+                },
+                {
+                    "index": 31,
+                    "title": "Human Resource Management, 15e",
+                    "author": "Gary Dessler, Biju Varrkey"
+                },
+                {
+                    "index": 32,
+                    "title": "Pragmatic AI: An Introduction to Cloud-Based ...",
+                    "author": "Gift"
+                },
+                {
+                    "index": 33,
+                    "title": "International Business, Global Edition",
+                    "author": "Daniels, John; Radebaugh, Lee; Sullivan, Daniel"
+                },
+                {
+                    "index": 34,
+                    "title": "Managing Classroom Behavior Using Positive Be...",
+                    "author": "Scott;Anderson;Alter"
+                },
+                {
+                    "index": 35,
+                    "title": "Key Marketing Metrics 2e",
+                    "author": "Farris, Paul"
+                },
+                {
+                    "index": 36,
+                    "title": "Microeconomics: Principles, Applications, and...",
+                    "author": "O'Sullivan;Sheffrin;Perez"
+                },
+                {
+                    "index": 37,
+                    "title": "Selling Today: Partnering to Create Value",
+                    "author": "Manning"
+                },
+                {
+                    "index": 38,
+                    "title": "Management Accounting:Information for Decisio...",
+                    "author": "Atkinson"
+                },
+                {
+                    "index": 39,
+                    "title": "Web Technologies: A Computer Science Perspect...",
+                    "author": "Jackson"
+                },
+                {
+                    "index": 40,
+                    "title": "Marketing Research : An International Approac...",
+                    "author": "Schmidt;Hollensen"
+                },
+                {
+                    "index": 41,
+                    "title": "Operations Management: Sustainability and Sup...",
+                    "author": "Heizer, Jay;Render, Barry;Munson, Chuck"
+                },
+                {
+                    "index": 42,
+                    "title": "Legal Environment of Business, Global Edition",
+                    "author": "Kubasek;Brennan;Browne"
+                },
+                {
+                    "index": 43,
+                    "title": "Macroeconomics, Global Edition",
+                    "author": "Williamson, Stephen D."
+                },
+                {
+                    "index": 44,
+                    "title": "Microeconomics, Global Edition",
+                    "author": "Perloff, Jeffrey M."
+                },
+                {
+                    "index": 45,
+                    "title": "Calculus with Applications, Global Edition",
+                    "author": "Lial, Margaret L.; Greenwell, Raymond N.; Ritchey, Nathan P."
+                },
+                {
+                    "index": 46,
+                    "title": "Introduction to Information Systems",
+                    "author": "Wallace"
+                },
+                {
+                    "index": 47,
+                    "title": "Organization Theory",
+                    "author": "McAuley"
+                },
+                {
+                    "index": 48,
+                    "title": "Microeconomics",
+                    "author": "Gravelle;Rees"
+                },
+                {
+                    "index": 49,
+                    "title": "Bond Markets, Analysis and Strategies",
+                    "author": "Fabozzi"
+                },
+                {
+                    "index": 50,
+                    "title": "Operations Strategy",
+                    "author": "Slack, Nigel; Lewis, Mike"
+                },
+                {
+                    "index": 51,
+                    "title": "Macroeconomics, Global Edition",
+                    "author": "Mishkin"
+                },
+                {
+                    "index": 52,
+                    "title": "Marketing Management, An Asian Perspective",
+                    "author": "Kotler, Philip"
+                },
+                {
+                    "index": 53,
+                    "title": "Database Systems: A Practical Approach to Des...",
+                    "author": "Connolly;Begg"
+                },
+                {
+                    "index": 54,
+                    "title": "Mastering Financial Mathematics in Microsoft ...",
+                    "author": "Day"
+                },
+                {
+                    "index": 55,
+                    "title": "Takeovers, Restructuring, and Corporate Gover...",
+                    "author": "Weston;Mitchell;Mulherin"
+                },
+                {
+                    "index": 56,
+                    "title": "Linear Algebra with Applications",
+                    "author": "Bretscher"
+                },
+                {
+                    "index": 57,
+                    "title": "Probability and Statistical Inference",
+                    "author": "Hogg"
+                },
+                {
+                    "index": 58,
+                    "title": "Accounting and Finance for Business",
+                    "author": "Black;Al-Kilani"
+                },
+                {
+                    "index": 59,
+                    "title": "Artificial Intelligence: A Modern Approach, 3...",
+                    "author": "Russell"
+                },
+                {
+                    "index": 60,
+                    "title": "Using Multivariate Statistics",
+                    "author": "Tabachnick;Fidell"
+                },
+                {
+                    "index": 61,
+                    "title": "Human Resource Management",
+                    "author": "Gary Dessler"
+                },
+                {
+                    "index": 62,
+                    "title": "Econometric Analysis",
+                    "author": "Greene"
+                },
+                {
+                    "index": 63,
+                    "title": "Using Econometrics: A Practical Guide, Global...",
+                    "author": "Studenmund, A. H."
+                },
+                {
+                    "index": 64,
+                    "title": "Investing Demystified : How to Invest Without...",
+                    "author": "Kroijer, Lars"
+                },
+                {
+                    "index": 65,
+                    "title": "Fundamentals of Database Systems",
+                    "author": "Navathe;Elmasri"
+                },
+                {
+                    "index": 66,
+                    "title": "Financial Times Guide to Managing Your Money,...",
+                    "author": "D'Arcy"
+                },
+                {
+                    "index": 67,
+                    "title": "Macroeconomics",
+                    "author": "Gartner"
+                },
+                {
+                    "index": 68,
+                    "title": "Begin to Code with Python",
+                    "author": "Rob Miles"
+                },
+                {
+                    "index": 69,
+                    "title": "FT Guide to Banking",
+                    "author": "Arnold"
+                },
+                {
+                    "index": 70,
+                    "title": "Calculus, Global Edition",
+                    "author": "Briggs;Cochran"
+                },
+                {
+                    "index": 71,
+                    "title": "Key Management Development Models",
+                    "author": "Cotton"
+                },
+                {
+                    "index": 72,
+                    "title": "How to Write a Brilliant CV",
+                    "author": "Bright, Jim Dr"
+                },
+                {
+                    "index": 73,
+                    "title": "Hurconomics for Talent Management: The Creati...",
+                    "author": "T. V. Rao"
+                },
+                {
+                    "index": 74,
+                    "title": "Design Patterns Explained: A New Perspective ...",
+                    "author": "Shalloway"
+                },
+                {
+                    "index": 75,
+                    "title": "Digital Image Processing, 4e",
+                    "author": "Gonzalez"
+                },
+                {
+                    "index": 76,
+                    "title": "Marketing and the Bottom Line",
+                    "author": "Ambler"
+                },
+                {
+                    "index": 77,
+                    "title": "Human Resource Analytics",
+                    "author": "Nishant Uppal"
+                },
+                {
+                    "index": 78,
+                    "title": "Introduction to Financial Accounting",
+                    "author": "Horngren"
+                },
+                {
+                    "index": 79,
+                    "title": "Numerical Methods",
+                    "author": "Babu Ram"
+                },
+                {
+                    "index": 80,
+                    "title": "Mathematical Statistics with Application",
+                    "author": "Miller"
+                },
+                {
+                    "index": 81,
+                    "title": "Statistics for Business",
+                    "author": "Stine"
+                },
+                {
+                    "index": 82,
+                    "title": "Personal Finance: Turning Money into Wealth",
+                    "author": "Keown"
+                },
+                {
+                    "index": 83,
+                    "title": "Modern Financial Markets & Institutions",
+                    "author": "Arnold"
+                },
+                {
+                    "index": 84,
+                    "title": "Operations Management",
+                    "author": "Slack;Brandon-Jones;Johnston"
+                },
+                {
+                    "index": 85,
+                    "title": "Big Data Fundamentals, 1e",
+                    "author": "Erl"
+                },
+                {
+                    "index": 86,
+                    "title": "Key Management Ratios:The 100+ Ratios Manager...",
+                    "author": "Walsh"
+                },
+                {
+                    "index": 87,
+                    "title": "Marketing Research + CD",
+                    "author": "Wilson, Alan"
+                },
+                {
+                    "index": 88,
+                    "title": "Organizational Behavior 18e",
+                    "author": "Robbins/Vohra"
+                },
+                {
+                    "index": 89,
+                    "title": "Indian Financial System",
+                    "author": "Bharati V. Pathak"
+                },
+                {
+                    "index": 90,
+                    "title": "Thomas' Calculus in SI Units",
+                    "author": "Thomas, George B.; Weir, Maurice D.; Hass, Joel R."
+                },
+                {
+                    "index": 91,
+                    "title": "Logistics Management: The Supply Chain Impera...",
+                    "author": "Vinod V. Sople"
+                },
+                {
+                    "index": 92,
+                    "title": "Options, Futures, & Other Derivatives",
+                    "author": "Hull;   Basu"
+                },
+                {
+                    "index": 93,
+                    "title": "Modern Operating Systems",
+                    "author": "Tanenbaum"
+                },
+                {
+                    "index": 94,
+                    "title": "Introduction to Operations and Supply Chain M...",
+                    "author": "Bozarth;Handfield"
+                },
+                {
+                    "index": 95,
+                    "title": "Security Analysis Portfolio Management, 7e",
+                    "author": "Fischer"
+                },
+                {
+                    "index": 96,
+                    "title": "Operating Systems, 3e",
+                    "author": "Nutt"
+                },
+                {
+                    "index": 97,
+                    "title": "Management Of Banking And Financial Services",
+                    "author": "Padmalatha Suresh"
+                },
+                {
+                    "index": 98,
+                    "title": "Programming Skills For Data Science",
+                    "author": "Freeman"
+                },
+                {
+                    "index": 99,
+                    "title": "Organizational Behaviour",
+                    "author": "Robbins, Stephen P.; Judge, Timothy; Campbell, Timothy"
+                },
+                {
+                    "index": 100,
+                    "title": "Marketing Research",
+                    "author": "Bajpai"
+                },
+                {
+                    "index": 101,
+                    "title": "Occupational Psychology",
+                    "author": "Steptoe-Warren"
+                },
+                {
+                    "index": 102,
+                    "title": "Investment Analysis and Portfolio Management",
+                    "author": "Ranganatham; Madhumathi"
+                },
+                {
+                    "index": 103,
+                    "title": "Machine Learning in Production",
+                    "author": "Kelleher"
+                },
+                {
+                    "index": 104,
+                    "title": "Artificial Intelligence: A Guide to Intellige...",
+                    "author": "Negnevitsky"
+                },
+                {
+                    "index": 105,
+                    "title": "Marketing Management",
+                    "author": "Hollensen"
+                },
+                {
+                    "index": 106,
+                    "title": "Distributed Systems: Concepts & Design",
+                    "author": "Coulouris"
+                },
+                {
+                    "index": 107,
+                    "title": "Marketing Communications : A European Perspec...",
+                    "author": "De Pelsmacker, Patrick; Geuens, Maggie; Van Den Bergh, Joeri"
+                },
+                {
+                    "index": 108,
+                    "title": "Database Systems: The Complete Book",
+                    "author": "Ullman;Widom;Garcia-Molina"
+                },
+                {
+                    "index": 109,
+                    "title": "Marketing Strategy and Competitive Positionin...",
+                    "author": "Hooley, Graham; Piercy, Nigel; Nicoulaud, Brigitte; Rudd, John"
+                },
+                {
+                    "index": 110,
+                    "title": "INTRODUCTION TO DATA MINING",
+                    "author": "PANG-NING TAN"
+                },
+                {
+                    "index": 111,
+                    "title": "International Finance: Theory and Policy, Glo...",
+                    "author": "Krugman, Paul R.; Obstfeld, Maurice; Melitz, Marc"
+                },
+                {
+                    "index": 112,
+                    "title": "Marketing Plan Handbook",
+                    "author": "Wood"
+                },
+                {
+                    "index": 113,
+                    "title": "FT Guide to Pensions and Wealth in Retirement",
+                    "author": "Greenwood"
+                },
+                {
+                    "index": 114,
+                    "title": "Multinational Business Finance, Global Editio...",
+                    "author": "Eiteman;Stonehill;Moffett"
+                },
+                {
+                    "index": 115,
+                    "title": "Operations Research An Introduction, eBook, G...",
+                    "author": "Taha, Hamdy"
+                },
+                {
+                    "index": 116,
+                    "title": "C How to Program, Global Edition",
+                    "author": "Deitel;Deitel"
+                },
+                {
+                    "index": 117,
+                    "title": "Computer Vision",
+                    "author": "Forsyth"
+                },
+                {
+                    "index": 118,
+                    "title": "Using and Understanding Mathematics: A Quanti...",
+                    "author": "Bennett"
+                },
+                {
+                    "index": 119,
+                    "title": "Management Information Systems 16/e",
+                    "author": "Kenneth C. Laudon"
+                },
+                {
+                    "index": 120,
+                    "title": "Introductory Statistics, Global Edition",
+                    "author": "Weiss"
+                },
+                {
+                    "index": 121,
+                    "title": "Marketing Management: Indian Cases",
+                    "author": "B. Mahadevan"
+                },
+                {
+                    "index": 122,
+                    "title": "NTA UGC NET/ SET/ JRF Paper 1 Teaching and  R...",
+                    "author": "K V  S Madaan"
+                },
+                {
+                    "index": 123,
+                    "title": "Performance Management Systems and Strategies",
+                    "author": "Bhattacharyya"
+                },
+                {
+                    "index": 124,
+                    "title": "Managerial Accounting",
+                    "author": "Proctor"
+                },
+                {
+                    "index": 125,
+                    "title": "Marketing Research with SPSS",
+                    "author": "Pelsmacker"
+                },
+                {
+                    "index": 126,
+                    "title": "Pandas for Everyone: Python Data Analysis",
+                    "author": "Nazmul Rajib"
+                },
+                {
+                    "index": 127,
+                    "title": "Introduction to Robotics: Mechanics and Contr...",
+                    "author": "Craig"
+                },
+                {
+                    "index": 128,
+                    "title": "UML 2 AND THE UNIFIED PROCESS: Practical Obje...",
+                    "author": "Arlow, Neustadt"
+                },
+                {
+                    "index": 129,
+                    "title": "Operations Management, 12e",
+                    "author": "Krajewski"
+                },
+                {
+                    "index": 130,
+                    "title": "Introduction to SPSS in Psychology",
+                    "author": "Howitt, Dennis; Cramer, Duncan"
+                },
+                {
+                    "index": 131,
+                    "title": "Key Performance Indicators (KPI)",
+                    "author": "Marr"
+                },
+                {
+                    "index": 132,
+                    "title": "Linear Algebra, 2/e",
+                    "author": "Promode Kumar Saikia"
+                },
+                {
+                    "index": 133,
+                    "title": "Mastering Derivatives markets",
+                    "author": "Taylor"
+                },
+                {
+                    "index": 134,
+                    "title": "Strategic Compensation: A Human Resource Mana...",
+                    "author": "Martocchio"
+                },
+                {
+                    "index": 135,
+                    "title": "Marketing Management, 15/e",
+                    "author": "Kotler"
+                },
+                {
+                    "index": 136,
+                    "title": "Organizational Change",
+                    "author": "Senior"
+                },
+                {
+                    "index": 137,
+                    "title": "Calculus & Its Applications, Global Edition",
+                    "author": "Goldstein, Larry J.; Schneider, David I.; Lay, David C.; Asmar, Nakhle H."
+                },
+                {
+                    "index": 138,
+                    "title": "Managing Human Resources, Global Edition",
+                    "author": "Gomez-Mejia;Balkin;Cardy"
+                },
+                {
+                    "index": 139,
+                    "title": "Mastering Modern Psychological Testing: Theor...",
+                    "author": "Reynolds;Livingston"
+                },
+                {
+                    "index": 140,
+                    "title": "Deep Learning Illustrated: A Visual, Interact...",
+                    "author": "Krohn"
+                },
+                {
+                    "index": 141,
+                    "title": "Probability and Statistics",
+                    "author": "DeGroot;Schervish"
+                },
+                {
+                    "index": 142,
+                    "title": "Strategic Brand Management",
+                    "author": "Kevin Lane Keller"
+                },
+                {
+                    "index": 143,
+                    "title": "Neural Networks and Learning Machines 3e",
+                    "author": "Haykin"
+                },
+                {
+                    "index": 144,
+                    "title": "Financial Markets and Institutions",
+                    "author": "Howells;Bain"
+                },
+                {
+                    "index": 145,
+                    "title": "Mastering Investment Banking Securities",
+                    "author": "Kozul"
+                },
+                {
+                    "index": 146,
+                    "title": "Integrated Advertising, Promotion, and Market...",
+                    "author": "Clow, Kenneth E.; Baack, Donald E."
+                },
+                {
+                    "index": 147,
+                    "title": "Microeconomics, Global Edition",
+                    "author": "Pindyck, Robert; Rubinfeld, Daniel"
+                },
+                {
+                    "index": 148,
+                    "title": "Service Operations Management: Improving Serv...",
+                    "author": "NA"
+                },
+                {
+                    "index": 149,
+                    "title": "Fundamentals of Database System, 7e",
+                    "author": "Elmasri"
+                },
+                {
+                    "index": 150,
+                    "title": "Macroeconomics",
+                    "author": "Robert J. Gordon"
+                },
+                {
+                    "index": 151,
+                    "title": "Managing Change in Organizations",
+                    "author": "Carnall"
+                },
+                {
+                    "index": 152,
+                    "title": "Issues in Management Accounting",
+                    "author": "Hopper;Scapens;Northcott"
+                },
+                {
+                    "index": 153,
+                    "title": "Visual Data Storytelling with Tableau, 1e",
+                    "author": "Ryan"
+                },
+                {
+                    "index": 154,
+                    "title": "Database Design for Mere Mortals?: A Hands-On...",
+                    "author": "Hernandez"
+                },
+                {
+                    "index": 155,
+                    "title": "Marketing for Entrepreneurs",
+                    "author": "Wolff"
+                },
+                {
+                    "index": 156,
+                    "title": "Fernando's Business Ethics and Corporate Gove...",
+                    "author": "Muraleedharan"
+                },
+                {
+                    "index": 157,
+                    "title": "Training in Interpersonal Skills: TIPS for Ma...",
+                    "author": "Robbins;Hunsaker"
+                },
+                {
+                    "index": 158,
+                    "title": "International Economics",
+                    "author": "Husted;Melvin"
+                },
+                {
+                    "index": 159,
+                    "title": "Understanding Natural Language Processing: Ma...",
+                    "author": "T V Geetha"
+                },
+                {
+                    "index": 160,
+                    "title": "International Financial Reporting : A Practic...",
+                    "author": "Melville, Alan"
+                },
+                {
+                    "index": 161,
+                    "title": "Research Methodology",
+                    "author": "S. S. Vinod Chandra"
+                },
+                {
+                    "index": 162,
+                    "title": "Entrepreneurship: Creating and Leading an Ent...",
+                    "author": "Kumar"
+                },
+                {
+                    "index": 163,
+                    "title": "Database Management Systems",
+                    "author": "ITL ESL"
+                },
+                {
+                    "index": 164,
+                    "title": "Key Business Analytics",
+                    "author": "Marr"
+                },
+                {
+                    "index": 165,
+                    "title": "Managing Change Step by Step",
+                    "author": "Newton"
+                },
+                {
+                    "index": 166,
+                    "title": "International Trade: Theory and Policy, Globa...",
+                    "author": "Krugman, Paul R.; Obstfeld, Maurice; Melitz, Marc"
+                },
+                {
+                    "index": 167,
+                    "title": "MySQL 5.0 Certification Study Guide",
+                    "author": "Dubois;Hinz;Pedersen"
+                },
+                {
+                    "index": 168,
+                    "title": "Deep Learning",
+                    "author": "Amit Kumar Das"
+                },
+                {
+                    "index": 169,
+                    "title": "Microeconomics",
+                    "author": "Hubbard"
+                },
+                {
+                    "index": 170,
+                    "title": "Programming in Python 3: A Complete Introduct...",
+                    "author": "Summerfield"
+                },
+                {
+                    "index": 171,
+                    "title": "Marketing, that works in India",
+                    "author": "Moorthi"
+                },
+                {
+                    "index": 172,
+                    "title": "Multivariate Data Analysis",
+                    "author": "Hair;Black;Babin;Anderson"
+                },
+                {
+                    "index": 173,
+                    "title": "Applied Multivariate Statistical Analysis",
+                    "author": "Johnson;Wichern"
+                },
+                {
+                    "index": 174,
+                    "title": "Financial Markets and Institutions, Global Ed...",
+                    "author": "Mishkin, Frederic S.; Eakins, Stanley"
+                },
+                {
+                    "index": 175,
+                    "title": "Understanding Financial Statements, Global Ed...",
+                    "author": "Fraser;Ormiston"
+                },
+                {
+                    "index": 176,
+                    "title": "Leadership in Organizations, 9/e",
+                    "author": "Yukl"
+                },
+                {
+                    "index": 177,
+                    "title": "Algorithm Design",
+                    "author": "Kleinberg;Tardos"
+                },
+                {
+                    "index": 178,
+                    "title": "Managerial Economics and Strategy, Global Edi...",
+                    "author": "Perloff, Jeffrey M.; Brander, James A."
+                },
+                {
+                    "index": 179,
+                    "title": "R for Everyone: Advanced Analytics and Graphi...",
+                    "author": "Lander"
+                },
+                {
+                    "index": 180,
+                    "title": "Neural Networks and Learning Machines",
+                    "author": "Haykin"
+                },
+                {
+                    "index": 181,
+                    "title": "Design and Analysis of Algorithms 2/e",
+                    "author": "Dave"
+                },
+                {
+                    "index": 182,
+                    "title": "International Economics: Theory and Policy, G...",
+                    "author": "Krugman, Paul R.; Obstfeld, Maurice; Melitz, Marc"
+                },
+                {
+                    "index": 183,
+                    "title": "Management and Organisational Behaviour",
+                    "author": "Mullins"
+                },
+                {
+                    "index": 184,
+                    "title": "Supply Chain Management",
+                    "author": "Sunil Chopra"
+                },
+                {
+                    "index": 185,
+                    "title": "Management and Cost Accounting",
+                    "author": "Bhimani"
+                },
+                {
+                    "index": 186,
+                    "title": "Management Control Systems 4th Edition : Perf...",
+                    "author": "Merchant, Kenneth; Van der Stede, Wim"
+                },
+                {
+                    "index": 187,
+                    "title": "Business Intelligence and Analytics: Systems ...",
+                    "author": "Turban"
+                },
+                {
+                    "index": 188,
+                    "title": "Derivatives and Risk Management",
+                    "author": "Ranganatham;Madhumathi"
+                },
+                {
+                    "index": 189,
+                    "title": "Introduction to Research Methods and Statisti...",
+                    "author": "McQueen"
+                },
+                {
+                    "index": 190,
+                    "title": "Microeconomics, Global Edition",
+                    "author": "Parkin"
+                },
+                {
+                    "index": 191,
+                    "title": "Speech and Language Processing: An Introducti...",
+                    "author": "Jurafsky"
+                },
+                {
+                    "index": 192,
+                    "title": "Operations Research",
+                    "author": "Mariappan"
+                },
+                {
+                    "index": 193,
+                    "title": "Fundamentals of Digital Marketing",
+                    "author": "Puneet Singh Bhatia"
+                },
+                {
+                    "index": 194,
+                    "title": "Logistics Engineering & Management",
+                    "author": "Blanchard"
+                },
+                {
+                    "index": 195,
+                    "title": "International Finance; A practical perspectiv...",
+                    "author": "Buckley"
+                },
+                {
+                    "index": 196,
+                    "title": "Valuation: The Art and Science of Corporate I...",
+                    "author": "Sheridan Titman"
+                },
+                {
+                    "index": 197,
+                    "title": "Organizational Behaviour",
+                    "author": "Buchanan;Huczynski"
+                },
+                {
+                    "index": 198,
+                    "title": "Numerical Analysis",
+                    "author": "Das / Vijayakumari"
+                },
+                {
+                    "index": 199,
+                    "title": "Acquisition Essentials : A step-by-step guide...",
+                    "author": "Rankine;Howson"
+                },
+                {
+                    "index": 200,
+                    "title": "Cryptography and Network Security, 7/e",
+                    "author": "Stallings"
+                },
+                {
+                    "index": 201,
+                    "title": "Personal Finance, 7/e",
+                    "author": "Jeff Madura"
+                },
+                {
+                    "index": 202,
+                    "title": "Probability,Statistics and Random Processes",
+                    "author": "Kousalya"
+                },
+                {
+                    "index": 203,
+                    "title": "Miller & Freund''s Probability and Statistics...",
+                    "author": "Johnson, Richard A.; Miller, Irwin; Freund, John"
+                },
+                {
+                    "index": 204,
+                    "title": "Managing Information Technology",
+                    "author": "Brown;DeHayes;Hoffer;Martin;Perkins"
+                },
+                {
+                    "index": 205,
+                    "title": "Logistics Management and Strategy",
+                    "author": "Harrison"
+                },
+                {
+                    "index": 206,
+                    "title": "Money, Banking and the Financial System",
+                    "author": "Hubbard;O''Brien"
+                },
+                {
+                    "index": 207,
+                    "title": "Macroeconomics, Global Edition",
+                    "author": "Blanchard"
+                },
+                {
+                    "index": 208,
+                    "title": "Cost Accounting,16/e",
+                    "author": "Horngren"
+                },
+                {
+                    "index": 209,
+                    "title": "Core Python Programming",
+                    "author": "Chun"
+                },
+                {
+                    "index": 210,
+                    "title": "Entrepreneurship: Perspectives and Cases",
+                    "author": "Westhead;McElwee;Wright"
+                },
+                {
+                    "index": 211,
+                    "title": "Introduction to Mathematical Statistics, Glob...",
+                    "author": "Robert V. Hogg; Joeseph McKean; Allen T. Craig"
+                },
+                {
+                    "index": 212,
+                    "title": "MIS Essentials",
+                    "author": "Kroenke"
+                },
+                {
+                    "index": 213,
+                    "title": "Marketing: An Introduction, Global Edition",
+                    "author": "Armstrong, Gary;Kotler, Philip;Opresnik, Marc Oliver"
+                }
+            ];
+
+        let allBooks = [];
+        let filteredBooks = [];
+
+        function initializeLibrary() {
+            allBooks = booksData;
+            filteredBooks = [...allBooks];
+
+            updateStats();
+            renderBooks();
+            setupSearch();
+        }
+
+        function updateStats() {
+            document.getElementById('total-books').textContent = allBooks.length;
+
+            const uniqueAuthors = new Set(allBooks.map(book => book.author));
+            document.getElementById('unique-authors').textContent = uniqueAuthors.size;
+        }
+
+        function renderBooks() {
+            const grid = document.getElementById('books-grid');
+
+            if (filteredBooks.length === 0) {
+                grid.innerHTML = \`
+                    <div class="no-results">
+                        <h3>No books found</h3>
+                        <p>Try adjusting your search terms</p>
+                    </div>
+                \`;
+                return;
+            }
+
+            const booksHTML = filteredBooks.map(book => \`
+                <div class="opr-bookself-item">
+                    <div class="opr-booklist-wrapper">
+                        <div class="opr-thumbnail-data">
+                            <div class="opr-cover-space">
+                                <div class="book-index">#\${book.index}</div>
+                                <h2>\${escapeHtml(book.title)}</h2>
+                                <div class="opr-author">\${escapeHtml(book.author)}</div>
+                                <div class="opr-lastread">Available now</div>
+                                <div class="opr-lib-btn-holder">
+                                    <a href="javascript:void(0)" class="btn btn-primary" onclick="readBook(\${book.index})">Read</a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="cover-img-block">
+                            <div class="cover-img-middle">
+                                <div class="cover-img-center">
+                                    <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iOTIiIGhlaWdodD0iMTI1IiB2aWV3Qm94PSIwIDAgOTIgMTI1IiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgo8cmVjdCB3aWR0aD0iOTIiIGhlaWdodD0iMTI1IiBmaWxsPSIjRjBGMEYwIiBzdHJva2U9IiNENUQ1RDUiLz4KPHN2ZyB4PSIyNiIgeT0iMzUiIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiNDQ0NDQ0MiIHN0cm9rZS13aWR0aD0iMSI+CjxyZWN0IHg9IjMiIHk9IjMiIHdpZHRoPSIxOCIgaGVpZ2h0PSIxOCIgcng9IjIiIHJ5PSIyIi8+CjxjaXJjbGUgY3g9IjguNSIgY3k9IjguNSIgcj0iMS41Ii8+CjxwYXRoIGQ9Im0yMSAxNS0zLjA4Ni0zLjA4NmEyIDIgMCAwIDAtMi44MjggMEwxMiAxNSIvPgo8L3N2Zz4KPHRleHQgeD0iNDYiIHk9IjEwMCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjEwIiBmaWxsPSIjOTk5OTk5IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5Mb2FkaW5nLi4uPC90ZXh0Pgo8L3N2Zz4K"
+                                         data-src="image/\${book.index}.webp"
+                                         alt="\${escapeHtml(book.title)}"
+                                         class="book-cover lazy-load"
+                                         loading="lazy">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            \`).join('');
+
+            grid.innerHTML = booksHTML;
+
+            // Implement lazy loading
+            implementLazyLoading();
+        }
+
+        function implementLazyLoading() {
+            const lazyImages = document.querySelectorAll('.lazy-load');
+
+            if ('IntersectionObserver' in window) {
+                const imageObserver = new IntersectionObserver((entries, observer) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            const img = entry.target;
+                            img.src = img.dataset.src;
+                            img.classList.remove('lazy-load');
+
+                            img.onload = () => {
+                                img.style.opacity = '1';
+                            };
+
+                            img.onerror = () => {
+                                img.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iOTIiIGhlaWdodD0iMTI1IiB2aWV3Qm94PSIwIDAgOTIgMTI1IiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgo8cmVjdCB3aWR0aD0iOTIiIGhlaWdodD0iMTI1IiBmaWxsPSIjRjBGMEYwIiBzdHJva2U9IiNENUQ1RDUiLz4KPHN2ZyB4PSIyNiIgeT0iMzUiIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiNDQ0NDQ0MiIHN0cm9rZS13aWR0aD0iMSI+CjxyZWN0IHg9IjMiIHk9IjMiIHdpZHRoPSIxOCIgaGVpZ2h0PSIxOCIgcng9IjIiIHJ5PSIyIi8+CjxjaXJjbGUgY3g9IjguNSIgY3k9IjguNSIgcj0iMS41Ii8+CjxwYXRoIGQ9Im0yMSAxNS0zLjA4Ni0zLjA4NmEyIDIgMCAwIDAtMi44MjggMEwxMiAxNSIvPgo8L3N2Zz4KPHRleHQgeD0iNDYiIHk9IjEwMCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjEwIiBmaWxsPSIjOTk5OTk5IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5ObyBJbWFnZTwvdGV4dD4KPC9zdmc+Cg=='
+                            };
+
+                            observer.unobserve(img);
+                        }
+                    });
+                }, {
+                    rootMargin: '50px'
+                });
+
+                lazyImages.forEach(img => imageObserver.observe(img));
+            } else {
+                lazyImages.forEach(img => {
+                    img.src = img.dataset.src;
+                });
+            }
+        }
+
+        function setupSearch() {
+            const searchInput = document.getElementById('search-input');
+            searchInput.addEventListener('input', (e) => {
+                const query = e.target.value.toLowerCase();
+                filteredBooks = allBooks.filter(book =>
+                    book.title.toLowerCase().includes(query) ||
+                    book.author.toLowerCase().includes(query)
+                );
+                renderBooks();
+            });
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function readBook(index) {
+            alert(\`Opening book #\${index} for reading...\`);
+            // You can load the corresponding JSON text file: \${index}.json
+            // window.open(\`texts/\${index}.json\`, '_blank');
+        }
+
+        // Zoom-in modal for cover images
+        document.addEventListener('click', function(e) {
+            if (e.target.tagName === 'IMG' && e.target.closest('.cover-img-block')) {
+                const modal = document.getElementById('imgModal');
+                const modalImg = document.getElementById('modalImg');
+                modalImg.src = e.target.src;  // uses your folder image directly
+                modal.style.display = 'flex';
+            }
+        });
+
+        // Close modal when clicking overlay or pressing Escape
+        document.getElementById('imgModal').addEventListener('click', function(e) {
+            this.style.display = 'none';
+        });
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                document.getElementById('imgModal').style.display = 'none';
+            }
+        });
+
+        // Initialize the library when the page loads
+        document.addEventListener('DOMContentLoaded', initializeLibrary);
+    </script>
+</body>
+
+</html>
+
+`;
