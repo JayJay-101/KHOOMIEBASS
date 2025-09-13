@@ -102,7 +102,7 @@ export default async function handler(req, res) {
     console.log(`✅ Authentication successful for extension: ${decryptedExtensionId}`);
 
     // 📝 PASTE YOUR HTML STRING VARIABLE HERE
-    const HTML_CONTENT = String.raw`
+    const HTML_CONTENT = `
     <!DOCTYPE html>
     <html lang="en">
     
@@ -1589,16 +1589,16 @@ export default async function handler(req, res) {
                 const grid = document.getElementById('books-grid');
     
                 if (filteredBooks.length === 0) {
-                    grid.innerHTML = \`
+                    grid.innerHTML = `
                         <div class="no-results">
                             <h3>No books found</h3>
                             <p>Try adjusting your search terms</p>
                         </div>
-                    \`;
+                    `;
                     return;
                 }
     
-                const booksHTML = filteredBooks.map(book => \`
+                const booksHTML = filteredBooks.map(book => `
                     <div class="opr-bookself-item">
                         <div class="opr-booklist-wrapper">
                             <div class="opr-thumbnail-data">
@@ -1625,7 +1625,7 @@ export default async function handler(req, res) {
                             </div>
                         </div>
                     </div>
-                \`).join('');
+                `).join('');
     
                 grid.innerHTML = booksHTML;
     
@@ -1686,9 +1686,9 @@ export default async function handler(req, res) {
             }
     
             function readBook(index) {
-                alert(\`Opening book #\${index} for reading...\`);
+                alert(`Opening book #\${index} for reading...`);
                 // You can load the corresponding JSON text file: \${index}.json
-                // window.open(\`texts/\${index}.json\`, '_blank');
+                // window.open(`texts/\${index}.json`, '_blank');
             }
     
             // Zoom-in modal for cover images
